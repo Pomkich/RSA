@@ -161,9 +161,9 @@ int main() {
 	encrypted_bits.clear();
 
 	std::ifstream input;
-	input.open("1.jpg", std::ios::binary);
-	std::string buffer(std::istreambuf_iterator<char>(input), {});
-	bits = convert_to_bits(buffer, block_len);
+	input.open("1.jpg", std::ios::binary);	// открываем файл для чтения в бинарном режиме
+	std::string buffer(std::istreambuf_iterator<char>(input), {});	// считываем в буффер
+	bits = convert_to_bits(buffer, block_len);	// представляем как поток битов
 	blocks = count_blocks(bits, block_len);
 
 	for (int i = 0; i < blocks; i++) {
@@ -171,16 +171,27 @@ int main() {
 		encrypted_blocks.push_back(e_block);
 	}
 
-	std::ofstream output;
+	std::ofstream output;	// открываем файл для записи зашифрованной версии
 	output.open("2.jpg", std::ios::binary);
 	for (auto block : encrypted_blocks) {
-		output << block;
+		encrypted_bits += convert_to_bits(block, block_len);
+	}
+
+	for (int i = 0; i < encrypted_bits.size() / 8; i++) {
+		char byte = NULL;
+		for (int j = 0; j < 8; j++) {
+			bool bit = (encrypted_bits[8 * i + j] == '1' ? true : false);
+			byte |= bit << (8 - (j + 1));
+		}
+		output << byte;
 	}
 	input.close();
 	output.close();
 
 	//input.open("2.jpg", std::ios::binary);
-
+	//std::string new_buffer(std::istreambuf_iterator<char>(input), {});
+	//encrypted_blocks.clear();
+	
 
 
 	return 0;

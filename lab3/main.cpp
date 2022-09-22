@@ -3,6 +3,7 @@
 #include <time.h>
 #include <bitset>
 #include <string>
+#include <fstream>
 
 using namespace std;
 
@@ -155,6 +156,31 @@ int main() {
 	}
 	std::cout << std::endl;
 	std::cout << bits << std::endl;
+
+	bits.clear();
+	encrypted_bits.clear();
+
+	std::ifstream input;
+	input.open("1.jpg", std::ios::binary);
+	std::string buffer(std::istreambuf_iterator<char>(input), {});
+	bits = convert_to_bits(buffer, block_len);
+	blocks = count_blocks(bits, block_len);
+
+	for (int i = 0; i < blocks; i++) {
+		int e_block = encrypt_block(bits, block_len, i, e, n);
+		encrypted_blocks.push_back(e_block);
+	}
+
+	std::ofstream output;
+	output.open("2.jpg", std::ios::binary);
+	for (auto block : encrypted_blocks) {
+		output << block;
+	}
+	input.close();
+	output.close();
+
+	//input.open("2.jpg", std::ios::binary);
+
 
 
 	return 0;

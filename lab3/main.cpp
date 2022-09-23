@@ -152,9 +152,6 @@ void generate_keys() {
 	std::cout << "enter two different prime numbers" << std::endl;
 	std::cin >> p >> q;
 
-	p = 5323;
-	q = 12343;
-
 	long long n = p * q;	// модуль
 
 	long long Fn = (p - 1) * (q - 1);
@@ -204,8 +201,6 @@ void encrypt_file(std::string file_name, int e, int n) {
 
 	input.close();
 	output.close();
-
-	//std::cout << convert_to_bits(file_bytes, block_len) << std::endl;
 }
 
 void decrypt_file(std::string file_name, int d, int n) {
@@ -224,7 +219,6 @@ void decrypt_file(std::string file_name, int d, int n) {
 		decrypted_blocks += decrypt_block(encrypted_blocks[i], block_len, d, n);
 	}
 
-	//std::string decrypted_bits = convert_to_bits(decrypted_blocks, block_len);
 	std::string decrypted_file_bytes = convert_to_bytes(decrypted_blocks);
 
 	std::ofstream output("decrypted_" + file_name, std::ios::binary);

@@ -37,12 +37,25 @@ std::pair<int, int> gcd_ext(int a, int b) {
 }
 
 // алгоритм быстрого возведения в степень по модулю
-int fast_pow(int base, int index_n, int modulus) {
-	int c = 1;
-	for (int i = 0; i < index_n; i++) {
-		c = (c * base) % modulus;
+int fast_pow(long long x, unsigned int y, int p) {
+	int res = 1;     // Initialize result
+
+	x = x % p; // Update x if it is more than or
+				// equal to p
+
+	if (x == 0) return 0; // In case x is divisible by p;
+
+	while (y > 0)
+	{
+		// If y is odd, multiply x with result
+		if (y & 1)
+			res = (res * x) % p;
+
+		// y must be even now
+		y = y >> 1; // y = y/2
+		x = (x * x) % p;
 	}
-	return c;
+	return res;
 }
 
 // функция преобразования сообщения в блоки, представленных в бинарном виде
@@ -91,6 +104,19 @@ std::string convert_to_bytes(std::string bits) {
 	return res;
 }
 
+std::vector<int> convert_to_nums(std::string bits, int blocks, int block_len) {
+	std::vector<int> res;
+	for (int i = 0; i < blocks; i++) {
+		int num = 0;
+		for (int j = 0; j < block_len; j++) {	// в m записываются block_len бит
+			bool bit = (bits[block_len * i + j] == '1' ? true : false);
+			num |= bit << (block_len - (j + 1));	// при первой итерации не будет смещения, поэтому +1
+		}
+		res.push_back(num);
+	}
+	return res;
+}
+
 // функция подсчёта количества блоков в шифруемом сообщении
 int count_blocks(std::string bits, int block_len) {
 	int blocks = 0;	// общее количество блоков, полученное в ходе шифрования
@@ -120,8 +146,8 @@ std::string decrypt_block(int encrypted_block, int block_len, int exp, int modul
 
 
 int main() {
-	int p = 7;	// DEBUG -> числа должны выбираться рандомно
-	int q = 17;
+	int p = 23;	// DEBUG -> числа должны выбираться рандомно
+	int q = 2579;
 	int n = p * q;	// модуль
 
 	int Fn = (p - 1) * (q - 1);
@@ -133,24 +159,24 @@ int main() {
 		e = rand() % Fn + 1;
 		// подбор взаимно простого числа для F(n)
 		while (true) {
+			e++;
 			if (e >= n) e = rand() % Fn + 1;	// если дошли до верхнего предела, снова выбираем число
 			if (gcd(Fn, e) == 1) break;	// если НОД == 1 -> простое число найдено
-			e++;
 		}
 		d = gcd_ext(Fn, e).second;	// d - коэффициент перед e
 	}
-	//	 DEBUG
-	// std::cout << Fn << gcd_ext(Fn, e).first << std::endl;
-	// std::cout << "e: " << e << std::endl;
+
+	// DEBUG
 	std::cout << "open key:   (" << e << ", " << n << ")" << std::endl;
 	std::cout << "secret key: (" << d << ", " << n << ")" << std::endl;
 
 	// вычисляем размер блока в битах
-	int block_len = std::log(n) / std::log(2);
+	int block_len = std::ceil(std::log(n) / std::log(2));
+	std::cout << "block lenght: " << block_len << std::endl;
 
-	std::string message = "abcqwsfafdasfasdfadsfdsafse";	// сообщение, которое нужно защифровать
+	std::string message = "bwebewqeqwewqe";	// сообщение, которое нужно защифровать
 	std::string bits = convert_to_bits(message, block_len);	// двоичное представление сообщения
-	int blocks = count_blocks(bits, block_len);
+	int blocks = count_blocks(bits, block_len);	// подсчёт количества блоков
 
 	std::vector<int> encrypted_blocks;	// зашифрованное сообщение представлено набором чисел
 	for (int i = 0; i < blocks; i++) {	// вычисляем для каждого блока соответствующее число
@@ -170,10 +196,31 @@ int main() {
 		decrypted_bits += decrypt_block(encrypted_blocks[i], block_len, d, n);
 	}
 	std::cout << std::endl;
-	std::cout << bits << std::endl;
+	std::cout << "source:    " << bits << std::endl;
+	std::cout << "crypted:   " << encrypted_bits << std::endl;
+	std::cout << "decrypted: " << decrypted_bits << std::endl;
 
-	std::cout << convert_to_bytes(bits) << std::endl;
-	std::cout << convert_to_bytes(decrypted_bits) << std::endl;
+	auto new_blocks = convert_to_nums(encrypted_bits, blocks, block_len);
+	for (auto block : encrypted_blocks) {
+		std::cout << block << " ";
+	}
+
+	std::cout << std::endl;
+
+	for (auto block : new_blocks) {
+		std::cout << block << " ";
+	}
+
+	std::string str;
+	for (int i = 0; i < new_blocks.size(); i++) {
+		str += decrypt_block(new_blocks[i], block_len, d, n);
+	}
+	std::cout << std::endl;
+	str = convert_to_bytes(str);
+	std::cout << str << std::endl;
+
+	//std::cout << convert_to_bytes(bits) << std::endl;
+	//std::cout << convert_to_bytes(decrypted_bits) << std::endl;
 
 	return 0;
 }

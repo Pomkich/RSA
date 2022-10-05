@@ -87,7 +87,7 @@ void generate_keys() {
 	std::cout << "secret key: (" << d << ", " << n << ")" << std::endl;
 }
 
-unsigned char* read_file(std::string file_name) {
+std::vector<unsigned char> read_file(std::string file_name) {
 	std::ifstream infile(file_name, std::ios::binary);
 
 	//get length of file
@@ -101,18 +101,22 @@ unsigned char* read_file(std::string file_name) {
 	//read file
 	infile.read(buffer, length);
 
-	unsigned char* uns_buf = new unsigned char[length];
-	memcpy(uns_buf, buffer, length);
+	std::vector<unsigned char> uns_buf;
+	for (int i = 0; i < length; i++)
+		uns_buf.push_back((unsigned char)buffer[i]);
 
 	delete[] buffer;
 	return uns_buf;
 }
 
 
+
 int main() {
 	auto buffer = read_file("1.txt");
-	for (int i = 0; i < 100; i++) {
-		std::cout << buffer[i];
+	std::ofstream out_file("2.txt", std::ios::binary);
+	for (int i = 0; i < buffer.size(); i++) {
+		//std::cout << buffer[i];
+		out_file << buffer[i];
 	}
 
 	return 0;

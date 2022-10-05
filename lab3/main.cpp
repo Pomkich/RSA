@@ -109,15 +109,28 @@ std::vector<unsigned char> read_file(std::string file_name) {
 	return uns_buf;
 }
 
-
+std::string bytes_to_bits(std::vector<unsigned char> bytes) {
+	std::string bits;
+	for (int i = 0; i < bytes.size(); i++) {
+		unsigned char byte = bytes[i];
+		for (int j = 0; j < 8; j++) {
+			if ((byte & 0b10000000) == 128) bits.push_back('1');
+			else bits.push_back('0');
+			byte = byte << 1;
+		}
+	}
+	return bits;
+}
 
 int main() {
 	auto buffer = read_file("1.txt");
 	std::ofstream out_file("2.txt", std::ios::binary);
 	for (int i = 0; i < buffer.size(); i++) {
-		//std::cout << buffer[i];
 		out_file << buffer[i];
 	}
+
+	auto bits = bytes_to_bits(buffer);
+	std::cout << bits;
 
 	return 0;
 }

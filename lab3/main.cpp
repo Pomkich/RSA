@@ -122,15 +122,40 @@ std::string bytes_to_bits(std::vector<unsigned char> bytes) {
 	return bits;
 }
 
+unsigned int bstr_to_num(std::string bits) {
+	unsigned int num = 0;
+	for (int i = bits.size() - 1, j = 0; i >= 0; i--, j++) {
+		if (bits[j] == '1') num |= (1 << i);
+		std::cout << bits[j] << " " << num << std::endl;
+	}
+	return num;
+}
+
+void encrypt(std::string bits, int e, int n) {
+	int block_len = std::ceil(std::log(n) / std::log(2));
+	// разбить на блоки
+
+	// превратить строки в числа, добавить в вектор
+
+	// зашифровать
+
+	for (int i = 0; i < bits.size(); i++) {
+
+	}
+}
+
 int main() {
-	auto buffer = read_file("1.txt");
+	/*auto buffer = read_file("1.txt");
 	std::ofstream out_file("2.txt", std::ios::binary);
 	for (int i = 0; i < buffer.size(); i++) {
 		out_file << buffer[i];
 	}
 
 	auto bits = bytes_to_bits(buffer);
-	std::cout << bits;
+	std::cout << bits;*/
+
+	std::string bits = "111110010011";
+	std::cout << bstr_to_num(bits);
 
 	return 0;
 }

@@ -131,14 +131,16 @@ std::string nums_to_bits(std::vector<unsigned int> nums, int block_len, int bloc
 			if (bit) sub_bits.push_back('1');
 			else sub_bits.push_back('0');
 		}
+		std::cout << sub_bits << std::endl;
 		bits += sub_bits;
 	}
 	return bits;
 }
 
-/*std::vector<unsigned char> bits_to_bytes(std::string bits) {
-	std::vector<unsigned int> bytes;
+std::vector<unsigned char> bits_to_bytes(std::string bits) {
+	std::vector<unsigned char> bytes;
 
+	// дополняем до целого числа битов
 	int to_fill = 8 - (bits.size() % 8);	// 8 - количество битов в байте
 	if (to_fill != 8) {
 		for (int i = 0; i < to_fill; i++)
@@ -146,11 +148,15 @@ std::string nums_to_bits(std::vector<unsigned int> nums, int block_len, int bloc
 	}
 
 	for (int i = 0; i < bits.size() / 8; i++) {
+		unsigned char byte = 0;
 		for (int bit_offset = 0; bit_offset < 8; bit_offset++) {
-			
+			byte = byte << 1;
+			if (bits[i * 8 + bit_offset] == '1') byte |= 1;
 		}
+		bytes.push_back(byte);
 	}
-}*/
+	return bytes;
+}
 
 unsigned int bstr_to_num(std::string bits) {
 	unsigned int num = 0;
@@ -185,8 +191,12 @@ void encrypt(std::string bits, int e, int n) {
 	}
 
 	// перевести зашифрованное сообщение в биты
-	nums_to_bits(encrypted_message, block_len, blocks);
-	
+	auto enc_bits = nums_to_bits(encrypted_message, block_len, blocks);
+	auto enc_bytes = bits_to_bytes(enc_bits);
+
+	for (auto byte : enc_bytes) {
+		std::cout << (int)byte << std::endl;
+	}
 }
 
 int main() {

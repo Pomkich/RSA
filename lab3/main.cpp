@@ -122,26 +122,71 @@ std::string bytes_to_bits(std::vector<unsigned char> bytes) {
 	return bits;
 }
 
+std::string nums_to_bits(std::vector<unsigned int> nums, int block_len, int blocks) {
+	std::string bits;
+	for (int i = 0; i < blocks; i++) {
+		std::string sub_bits;
+		for (int bit_offset = block_len - 1; bit_offset >= 0; bit_offset--) {
+			bool bit = ((nums[i] >> bit_offset) & 1);
+			if (bit) sub_bits.push_back('1');
+			else sub_bits.push_back('0');
+		}
+		bits += sub_bits;
+	}
+	return bits;
+}
+
+/*std::vector<unsigned char> bits_to_bytes(std::string bits) {
+	std::vector<unsigned int> bytes;
+
+	int to_fill = 8 - (bits.size() % 8);	// 8 - количество битов в байте
+	if (to_fill != 8) {
+		for (int i = 0; i < to_fill; i++)
+			bits.push_back('0');
+	}
+
+	for (int i = 0; i < bits.size() / 8; i++) {
+		for (int bit_offset = 0; bit_offset < 8; bit_offset++) {
+			
+		}
+	}
+}*/
+
 unsigned int bstr_to_num(std::string bits) {
 	unsigned int num = 0;
-	for (int i = bits.size() - 1, j = 0; i >= 0; i--, j++) {
+	for (int i = bits.size() - 1, j = 0; i >= 0; i--, j++)
 		if (bits[j] == '1') num |= (1 << i);
-		std::cout << bits[j] << " " << num << std::endl;
-	}
 	return num;
 }
 
 void encrypt(std::string bits, int e, int n) {
 	int block_len = std::ceil(std::log(n) / std::log(2));
-	// разбить на блоки
+	std::vector<unsigned int> source_message;
 
-	// превратить строки в числа, добавить в вектор
-
-	// зашифровать
-
-	for (int i = 0; i < bits.size(); i++) {
-
+	// дополнить нулями биты
+	int to_fill = block_len - (bits.size() % block_len);
+	if (to_fill != block_len) {
+		for (int i = 0; i < to_fill; i++)
+			bits.push_back('0');
 	}
+
+	// разбить на блоки
+	int blocks = std::ceil((double)bits.size() / block_len);
+	for (int i = 0; i < blocks; i++) {
+		std::string sb_num = bits.substr(i * block_len, block_len);
+		source_message.push_back(bstr_to_num(sb_num));	// превратить строки в числа, добавить в вектор
+	}
+
+	std::vector<unsigned int> encrypted_message;
+	// зашифровать
+	for (auto num : source_message) {
+		encrypted_message.push_back(fast_pow(num, e, n));
+		std::cout << encrypted_message.back() << std::endl;
+	}
+
+	// перевести зашифрованное сообщение в биты
+	nums_to_bits(encrypted_message, block_len, blocks);
+	
 }
 
 int main() {
@@ -154,8 +199,9 @@ int main() {
 	auto bits = bytes_to_bits(buffer);
 	std::cout << bits;*/
 
-	std::string bits = "111110010011";
-	std::cout << bstr_to_num(bits);
+	std::string bits = "111110010011111110010011111110010011111110010011111110010011111110010011010101";
+	encrypt(bits, 16427, 65701789);
+	//std::cout << bstr_to_num(bits);
 
 	return 0;
 }

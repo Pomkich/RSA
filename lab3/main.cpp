@@ -109,7 +109,7 @@ std::vector<unsigned char> read_file(std::string file_name) {
 	return uns_buf;
 }
 
-std::string bytes_to_bits(std::vector<unsigned char> bytes) {
+std::string bytes_to_bits(std::vector<unsigned char>& bytes) {
 	std::string bits;
 	for (int i = 0; i < bytes.size(); i++) {
 		unsigned char byte = bytes[i];
@@ -122,7 +122,7 @@ std::string bytes_to_bits(std::vector<unsigned char> bytes) {
 	return bits;
 }
 
-std::string nums_to_bits(std::vector<unsigned int> nums, int block_len, int blocks) {
+std::string nums_to_bits(std::vector<unsigned int>& nums, int block_len, int blocks) {
 	std::string bits;
 	for (int i = 0; i < blocks; i++) {
 		std::string sub_bits;
@@ -137,10 +137,10 @@ std::string nums_to_bits(std::vector<unsigned int> nums, int block_len, int bloc
 	return bits;
 }
 
-std::vector<unsigned char> bits_to_bytes(std::string bits) {
+std::vector<unsigned char> bits_to_bytes(std::string& bits) {
 	std::vector<unsigned char> bytes;
 
-	// дополняем до целого числа битов
+	// дополняем до целого числа байтов
 	int to_fill = 8 - (bits.size() % 8);	// 8 - количество битов в байте
 	if (to_fill != 8) {
 		for (int i = 0; i < to_fill; i++)
@@ -158,14 +158,14 @@ std::vector<unsigned char> bits_to_bytes(std::string bits) {
 	return bytes;
 }
 
-unsigned int bstr_to_num(std::string bits) {
+unsigned int bstr_to_num(std::string& bits) {
 	unsigned int num = 0;
 	for (int i = bits.size() - 1, j = 0; i >= 0; i--, j++)
 		if (bits[j] == '1') num |= (1 << i);
 	return num;
 }
 
-void encrypt(std::string bits, int e, int n) {
+std::vector<unsigned char> encrypt(std::string bits, int e, int n) {
 	int block_len = std::ceil(std::log(n) / std::log(2));
 	std::vector<unsigned int> source_message;
 
@@ -192,25 +192,23 @@ void encrypt(std::string bits, int e, int n) {
 
 	// перевести зашифрованное сообщение в биты
 	auto enc_bits = nums_to_bits(encrypted_message, block_len, blocks);
+	// перевести биты в байты
 	auto enc_bytes = bits_to_bytes(enc_bits);
-
-	for (auto byte : enc_bytes) {
-		std::cout << (int)byte << std::endl;
-	}
+	
+	return enc_bytes;
 }
 
 int main() {
-	/*auto buffer = read_file("1.txt");
+	auto buffer = read_file("1.txt");
+
+	auto encrytped_bytes = encrypt(bytes_to_bits(buffer), 16427, 65701789);
+
 	std::ofstream out_file("2.txt", std::ios::binary);
 	for (int i = 0; i < buffer.size(); i++) {
-		out_file << buffer[i];
+		out_file << encrytped_bytes[i];
 	}
 
-	auto bits = bytes_to_bits(buffer);
-	std::cout << bits;*/
-
-	std::string bits = "111110010011111110010011111110010011111110010011111110010011111110010011010101";
-	encrypt(bits, 16427, 65701789);
+	//std::string bits = "111110010011111110010011111110010011111110010011111110010011111110010011010101";
 	//std::cout << bstr_to_num(bits);
 
 	return 0;

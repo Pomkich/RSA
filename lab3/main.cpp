@@ -58,12 +58,40 @@ int fast_pow(long long x, unsigned int y, int p) {
 	return res;
 }
 
-void generate_keys() {
-	int p = 5323;
-	int q = 12343;
+bool is_prime(long long number) {
+	std::vector<int> prime_numbers = { 2 };
+	double limit = std::sqrt(number);
 
-	std::cout << "enter two different prime numbers" << std::endl;
-	std::cin >> p >> q;
+	for (int num = 3; num <= limit; num++) {
+		bool prime = true;
+		for (auto prime_num : prime_numbers) {
+			if (num % prime_num == 0) {
+				prime = false;
+				break;
+			}
+		}
+		if (prime)
+			prime_numbers.push_back(num);
+	}
+
+	if (number == 2) return true;   // 2 - особый случай
+
+	for (auto prime_num : prime_numbers) {
+		if (number % prime_num == 0)
+			return false;
+	}
+
+	return true;
+}
+
+
+void generate_keys() {
+	srand(time(NULL));
+	int p = rand() % 10000 + 1000;
+	int q = rand() % 10000 + 1000;
+
+	while (!is_prime(p)) p++;	// приводим сгенерированные числа к простым
+	while (!is_prime(q)) q++;
 
 	long long n = p * q;	// модуль
 
@@ -71,7 +99,6 @@ void generate_keys() {
 	int e = 0;
 	int d = 0;
 
-	srand(time(NULL));
 	while (d < 2) {	// d обязательно должно быть положительным?
 		e = rand() % Fn + 1;
 		// подбор взаимно простого числа для F(n)
@@ -82,6 +109,13 @@ void generate_keys() {
 		}
 		d = gcd_ext(Fn, e).second;	// d - коэффициент перед e
 	}
+
+	// записываем ключи в файлы
+	std::ofstream key_file("ekey.txt");
+	key_file << e << " " << n;
+	key_file.close();
+	key_file.open("dkey.txt");
+	key_file << d << " " << n;
 
 	std::cout << "open key:   (" << e << ", " << n << ")" << std::endl;
 	std::cout << "secret key: (" << d << ", " << n << ")" << std::endl;
@@ -131,7 +165,6 @@ std::string nums_to_bits(std::vector<unsigned int>& nums, int block_len, int blo
 			if (bit) sub_bits.push_back('1');
 			else sub_bits.push_back('0');
 		}
-		std::cout << sub_bits << std::endl;
 		bits += sub_bits;
 	}
 	return bits;
@@ -165,7 +198,9 @@ unsigned int bstr_to_num(std::string& bits) {
 	return num;
 }
 
-std::vector<unsigned char> encrypt(std::string bits, int e, int n) {
+// функция шифрования/дешифрования
+// вариант использования зависит от того, какой ключ используется
+std::vector<unsigned char> d_e_function(std::string bits, int e_d, int n) {
 	int block_len = std::ceil(std::log(n) / std::log(2));
 	std::vector<unsigned int> source_message;
 
@@ -186,8 +221,7 @@ std::vector<unsigned char> encrypt(std::string bits, int e, int n) {
 	std::vector<unsigned int> encrypted_message;
 	// зашифровать
 	for (auto num : source_message) {
-		encrypted_message.push_back(fast_pow(num, e, n));
-		std::cout << encrypted_message.back() << std::endl;
+		encrypted_message.push_back(fast_pow(num, e_d, n));
 	}
 
 	// перевести зашифрованное сообщение в биты
@@ -198,40 +232,47 @@ std::vector<unsigned char> encrypt(std::string bits, int e, int n) {
 	return enc_bytes;
 }
 
-int main() {
-	auto buffer = read_file("1.txt");
+// зашифровать/расшифровать файл
+void d_e_file(std::string file_name, std::string key_file_name) {
+	long int e_d = 0;
+	long int n = 0;
 
-	auto encrytped_bytes = encrypt(bytes_to_bits(buffer), 16427, 65701789);
+	std::ifstream key_file(key_file_name);
+	key_file >> e_d >> n;
 
-	std::ofstream out_file("2.txt", std::ios::binary);
-	for (int i = 0; i < buffer.size(); i++) {
-		out_file << encrytped_bytes[i];
+	auto buffer = read_file(file_name);
+	auto encryped_bytes = d_e_function(bytes_to_bits(buffer), e_d, n);
+
+	std::ofstream out_file("enc_" + file_name, std::ios::binary);
+	for (int i = 0; i < encryped_bytes.size(); i++) {
+		out_file << encryped_bytes[i];
 	}
-
-	//std::string bits = "111110010011111110010011111110010011111110010011111110010011111110010011010101";
-	//std::cout << bstr_to_num(bits);
-
-	return 0;
 }
 
-/*char cmd;
+int main() {
+	char cmd;
 	while (true) {
 		std::cin >> cmd;
 		std::string file_name;
-		int e(0), d(0), n(0);
+		std::string key_file_name;
 		switch (cmd) {
 		case 'g':
 			generate_keys();
 			break;
 
 		case 'e':
-			break;
-
-		case 'd':
+			std::cout << "enter file name" << std::endl;
+			std::cin >> file_name;
+			std::cout << "enter key file name" << std::endl;
+			std::cin >> key_file_name;
+			d_e_file(file_name, key_file_name);
+			std::cout << "file enctyped" << std::endl;
 			break;
 
 		case 'q':
 			exit(0);
 			break;
 		}
-	}*/
+	}
+	return 0;
+}

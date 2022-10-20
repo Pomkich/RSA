@@ -252,6 +252,7 @@ void d_e_file(std::string file_name, std::string key_file_name) {
 int main() {
 	char cmd;
 	while (true) {
+		std::cout << "enter command (g - generate keys, e - encrypt/decrypt file, q - exit)" << std::endl;
 		std::cin >> cmd;
 		std::string file_name;
 		std::string key_file_name;
